@@ -1,0 +1,20 @@
+# Generated files — recreate by running the pipeline
+nfl_stats.db
+models/
+evaluation/
+feature_importance.png
+ridge_coefficients.png
+current_players_2024.csv
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.Python
+
+# macOS
+.DS_Store
+
+# Editors
+.vscode/
+.idea/

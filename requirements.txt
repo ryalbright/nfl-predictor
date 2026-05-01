@@ -1,0 +1,7 @@
+nfl_data_py
+pandas
+numpy
+scikit-learn
+matplotlib
+joblib
+python-dateutil
