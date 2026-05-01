@@ -62,7 +62,7 @@ POS_FEATURES: dict[str, list[str]] = {
 }
 
 
-# ── Feature computation ────────────────────────────────────────────────────────
+# Feature computation
 
 def add_durability_features(df: pd.DataFrame) -> pd.DataFrame:
     """Injury and durability signals — needs full career history per player."""
@@ -89,7 +89,7 @@ def add_history_features(df: pd.DataFrame) -> pd.DataFrame:
     """
     df = df.copy().sort_values(["player_id", "season"]).reset_index(drop=True)
 
-    # ── Lag PPR totals ──────────────────────────────────────────────────
+    # Lag PPR totals
     df["lag1_ppr"] = df.groupby("player_id")["ppr_points"].shift(1)
     df["lag2_ppr"] = df.groupby("player_id")["ppr_points"].shift(2)
 
@@ -103,7 +103,7 @@ def add_history_features(df: pd.DataFrame) -> pd.DataFrame:
     lag1_games = df.groupby("player_id")["games"].shift(1).replace(0, np.nan)
     df["lag1_ppr_per_game"] = df["lag1_ppr"] / lag1_games
 
-    # ── Prior positional rank ───────────────────────────────────────────
+    # Prior positional rank
     # Rank within each season (1 = best), then shift forward one year
     df["_curr_rank"] = df.groupby("season")["ppr_points"].rank(
         ascending=False, method="min"
@@ -114,7 +114,7 @@ def add_history_features(df: pd.DataFrame) -> pd.DataFrame:
     df["lag1_top24"] = (df["lag1_rank"] <= 24).astype(float)
     df = df.drop(columns=["_curr_rank"])
 
-    # ── Team change ─────────────────────────────────────────────────────
+    # Team change
     prev_team = df.groupby("player_id")["team"].shift(1)
     df["team_changed"] = (df["team"] != prev_team).astype(float)
     # First season for a player: no prior team → not a "change"
@@ -152,7 +152,7 @@ def _load_full(position: str) -> pd.DataFrame:
     return df
 
 
-# ── Dataset builders ───────────────────────────────────────────────────────────
+# Dataset builders
 
 def build_training_data(
     position: str,

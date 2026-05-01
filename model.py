@@ -40,7 +40,7 @@ def train_position(position: str) -> dict:
 
     cv = KFold(n_splits=5, shuffle=True, random_state=42)
 
-    # ── Gradient Boosting ──────────────────────────────────────────────
+    # Gradient Boosting
     gb = GradientBoostingRegressor(
         n_estimators=300,
         max_depth=4,
@@ -51,7 +51,7 @@ def train_position(position: str) -> dict:
     )
     gb_cv_mae = _cv_mae(gb, X, y, cv)
 
-    # ── Ridge Regression (needs scaling — wrapped in a Pipeline) ───────
+    # Ridge Regression 
     # Alpha controls regularization strength; cross-validate a few values
     best_ridge_mae = np.inf
     best_alpha     = 1.0
@@ -71,7 +71,7 @@ def train_position(position: str) -> dict:
     ])
     ridge_cv_mae = best_ridge_mae
 
-    # ── Pick winner ────────────────────────────────────────────────────
+    # Pick winner
     winner_name = "GradientBoosting" if gb_cv_mae <= ridge_cv_mae else "Ridge"
     winner      = gb                  if gb_cv_mae <= ridge_cv_mae else ridge
     winner_mae  = min(gb_cv_mae, ridge_cv_mae)
@@ -108,7 +108,7 @@ def plot_results(results: list[dict]) -> None:
     if not valid:
         return
 
-    # ── Feature importance (GB only — Ridge uses coefficients instead) ──
+    # Feature importance 
     gb_results = [r for r in valid if r["winner"] == "GradientBoosting"]
     if gb_results:
         n   = len(gb_results)
@@ -146,7 +146,7 @@ def plot_results(results: list[dict]) -> None:
         plt.savefig(out, dpi=150, bbox_inches="tight")
         print(f"Saved: {out}")
 
-    # ── Ridge coefficients for Ridge-winning positions ──────────────────
+    #  Ridge coefficients for Ridge-winning positions
     ridge_results = [r for r in valid if r["winner"] == "Ridge"]
     if ridge_results:
         n   = len(ridge_results)

@@ -36,13 +36,13 @@ MODEL_DIR  = Path("models")
 OUTPUT_DIR = Path("evaluation")
 OUTPUT_DIR.mkdir(exist_ok=True)
 
-# --- Thresholds for annotation categories ---
-# A prediction error larger than this (and no injury) = model whiff
+#Thresholds for annotation categories
+# A prediction error larger than this and no injury  = model whiff
 BIG_MISS_THRESHOLD   = 45   # PPR points
 # A prediction error smaller than this on an elite player = model hit
 GOOD_HIT_THRESHOLD   = 25   # PPR points
 # "Elite" = predicted PPR is above this percentile for the position
-ELITE_PERCENTILE     = 60
+ELITE_PERCENTILE     = 80
 # Breakout = actual was this much MORE than predicted, player wasn't injured
 BREAKOUT_THRESHOLD   = 50   # PPR points
 
@@ -156,7 +156,7 @@ def plot_position(res: dict) -> None:
         fontsize=13, fontweight="bold",
     )
 
-    # ── Panel 1: Predicted vs Actual, color-coded ────────────────────────
+    # Predicted vs Actual, color-coded
     ax = axes[0]
     cats_arr = np.array(cats)
 
@@ -223,7 +223,7 @@ def plot_position(res: dict) -> None:
     ]
     ax.legend(handles=legend_handles, fontsize=7.5, loc="upper left")
 
-    # ── Panel 2: Learning Curve ──────────────────────────────────────────
+    # Panel 2: Learning Curve
     ax = axes[1]
     cv = KFold(n_splits=5, shuffle=True, random_state=42)
     LearningCurveDisplay.from_estimator(
@@ -236,7 +236,7 @@ def plot_position(res: dict) -> None:
     ax.set_title("Learning Curve  (does more data help?)")
     ax.set_xlabel("Training samples")
 
-    # ── Panel 3: Permutation Importance ─────────────────────────────────
+    # Panel 3: Permutation Importance
     ax = axes[2]
     perm = permutation_importance(
         res["model"], res["X_hold"], y_true,

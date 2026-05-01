@@ -28,7 +28,7 @@ MODEL_DIR   = Path("models")
 MODEL_DIR.mkdir(exist_ok=True)
 
 
-# ── Data builders ──────────────────────────────────────────────────────────────
+# Data builders
 
 def _rank_labels(position: str, top_n: int, min_games_rank: int = 1) -> pd.DataFrame:
     """
@@ -80,7 +80,7 @@ def build_predict_features(position: str, season: int, feature_cols: list[str], 
     return df.reset_index(drop=True)
 
 
-# ── Training ───────────────────────────────────────────────────────────────────
+# Training
 
 def train_classifier(position: str, top_n: int) -> dict | None:
     X, y, feature_cols = build_classification_data(position, top_n)
@@ -126,7 +126,7 @@ def train_all() -> None:
         print()
 
 
-# ── Prediction ─────────────────────────────────────────────────────────────────
+# Prediction
 
 def predict_position(position: str, season: int = 2025, top_n_display: int = 20) -> pd.DataFrame:
     # Load all three threshold models for this position
@@ -183,7 +183,7 @@ def predict_all(season: int = 2025, top_n_display: int = 20) -> None:
             print(result.to_string())
 
 
-# ── Entry point ────────────────────────────────────────────────────────────────
+# Entry point
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="NFL finish-probability classifier.")

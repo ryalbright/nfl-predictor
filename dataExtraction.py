@@ -69,16 +69,16 @@ weekly = weekly.rename(columns={
     "passing_interceptions":  "interceptions",   # new nflverse column name
 })
 
-# ---------- filter positions ----------
+# filter positions
 if "position" not in weekly.columns and "pos" in weekly.columns:
     weekly = weekly.rename(columns={"pos": "position"})
 weekly = weekly[weekly["position"].isin(POS_KEEP)].copy()
 
-# ---------- add PPR if not already present ----------
+# add PPR if not already present
 if "ppr_points" not in weekly.columns:
     weekly["ppr_points"] = weekly.apply(compute_ppr, axis=1)
 
-# ---------- aggregate to season ----------
+# aggregate to season
 sum_cols = [
     "attempts", "completions", "passing_yards", "passing_tds", "interceptions",
     "carries", "rushing_yards", "rushing_tds",
@@ -107,7 +107,7 @@ rush = seasonal.get("rushing_yards", 0)
 recv = seasonal.get("receiving_yards", 0)
 seasonal["scrimmage_yards"] = rush.fillna(0) + recv.fillna(0)
 
-# ---------- load rosters for birth dates ----------
+# load rosters to get ages
 print("\nFetching rosters for age calculation...")
 roster_frames = []
 for yr in SEASONS:
@@ -130,7 +130,7 @@ if roster_frames:
             lambda r: age_on_sept1(r["birth_date"], r["season"]), axis=1
         )
 
-# ---------- trim to essentials ----------
+# trim to only essential data
 essentials = [
     "player_id", "player_name", "position", "team", "season", "age_sept1", "games",
     "completions", "attempts", "passing_yards", "passing_tds", "interceptions",
@@ -140,7 +140,7 @@ essentials = [
 ]
 seasonal = seasonal[[c for c in essentials if c in seasonal.columns]]
 
-# ---------- write ----------
+# write
 out = "season_totals_2019_2025.csv"
 seasonal.to_csv(out, index=False)
 print(f"\nWrote: {out}  ({len(seasonal):,} rows, seasons {SEASONS[0]}–{SEASONS[-1]})")
