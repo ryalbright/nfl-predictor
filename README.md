@@ -4,8 +4,6 @@ A machine learning pipeline that predicts NFL player fantasy PPR scoring for the
 
 Built with Python, scikit-learn, pandas, and SQLite.
 
----
-
 ## What It Does
 
 - **Pulls live NFL data** from the [nflverse](https://github.com/nflverse/nflverse-data) dataset (2019–2025 regular season)
@@ -28,7 +26,7 @@ Built with Python, scikit-learn, pandas, and SQLite.
 
 *Naive baseline = predict every player scores exactly the same as last year.*
 
-WR and TE beat the naive baseline. QB is the hardest to predict — one injury to an elite QB (e.g., Lamar Jackson going from a 471-point 2024 to 215 in 2025 due to games missed) tanks the whole metric.
+WR and TE beat the naive baseline. QB is the hardest to predict(e.g., Lamar Jackson going from a 471-point 2024 to 215 in 2025 due to games missed.) Offenses also change drastically.
 
 ---
 
@@ -38,15 +36,10 @@ WR and TE beat the naive baseline. QB is the hardest to predict — one injury t
 With ~200–450 training samples per position, Ridge's linear assumptions generalize better than a complex tree ensemble. The model automatically cross-validates both and picks the winner per position.
 
 **Two-season lag features**
-Rather than only using last year's stats, the model looks at the prior two seasons. This is critical for injury recovery — a player who scored 400 PPR in year N-2 but only 120 in year N-1 (due to injury) should not be treated the same as someone consistently averaging 120.
-
-**Honest evaluation**
-An early version of this project had a data leakage bug where the 2024→2025 transition was included in both training and evaluation, making holdout metrics look artificially good (TE R² was 0.932 — essentially testing on training data). Catching and fixing this brought the TE R² to an honest 0.638.
+Rather than only using last year's stats, the model looks at the prior two seasons. This is critical for injury recovery or a season with a bad quarterback. A player who scored 400 PPR in year N-2 but only 120 in year N-1 (due to injury) should not be treated the same as someone consistently averaging 120. This helped players like Chris Olave get a boost, who had a great 2023 and a bad 2024.
 
 **SQL + pandas together**
 Raw data lives in a SQLite database. All data loading goes through parameterized SQL queries (`db.py`), with pandas handling transformation and feature engineering downstream.
-
----
 
 ## Tech Stack
 
@@ -56,8 +49,6 @@ Raw data lives in a SQLite database. All data loading goes through parameterized
 - **ML** — scikit-learn (`GradientBoostingRegressor`, `Ridge`, `CalibratedClassifierCV`, `Pipeline`, `StandardScaler`)
 - **Evaluation** — `PredictionErrorDisplay`, `LearningCurveDisplay`, `permutation_importance`
 - **Serialization** — joblib
-
----
 
 ## Project Structure
 
@@ -70,7 +61,7 @@ Raw data lives in a SQLite database. All data loading goes through parameterized
 ├── evaluate.py         # Holdout evaluation with categorized scatter plots
 ├── predict.py          # Generate 2026 PPR projections
 ├── requirements.txt
-└── season_totals_2019_2025.csv   # Pre-pulled data (skip dataExtraction.py if using this)
+└── season_totals_2019_2025.csv   # Pre-pulled data
 ```
 
 ---
@@ -84,32 +75,23 @@ pip install -r requirements.txt
 
 **Full pipeline** (first time or to refresh with latest data)
 ```bash
-python dataExtraction.py   # ~1 min — pulls fresh data from nflverse
+python dataExtraction.py   # pulls data from nflverse
 python db.py               # builds SQLite database
-python model.py            # trains regression models, saves to models/
+python model.py            # trains regression models and saves to models
 python classify.py         # trains finish-probability classifiers
-python evaluate.py         # generates evaluation charts → evaluation/
+python evaluate.py         # generates evaluation charts that go to evaluation graphs
 python predict.py          # prints 2026 PPR projections
-```
-
-**Skip data pull** (using the included CSV)
-```bash
-python db.py
-python model.py
-python classify.py
-python evaluate.py
-python predict.py
 ```
 
 ---
 
 ## Sample Output
 
-**2026 PPR Projections — TE (top 10)**
+**2026 PPR Projections — WR (top 10)**
 ```
-    Player       Team   Age  GP  2025 PPR  Pred 2026 PPR
-1   T.McBride    ARI   25.8  17    315.9         ...
-2   C.Loveland   CHI   21.4  18    198.4         ...
+    Player       Team   Age  GP  2024 PPR  Pred 2025 PPR
+1   J.Chase      CIN   24.50  17   403.0         306.7
+2   A.Sr. Brown  DET   24.86  17   316.18        278.5 
 ...
 ```
 
@@ -125,9 +107,9 @@ python predict.py
 
 ## Limitations
 
-NFL year-to-year prediction is genuinely hard. The biggest sources of error are:
-- **Breakouts** — players who step into a new role the model hasn't seen (e.g., Amon-Ra St. Brown 2025)
-- **Team/role changes** — a WR changing teams completely changes their opportunity
-- **Small training set** — only 6 seasons of data; more historical seasons would meaningfully improve accuracy
+NFL year-to-year prediction is difficult, with how many factors go into a players success year after year. The biggest sources of error are:
+- **Breakouts** — players who step into a new role the model hasn't seen.
+- **Team/role changes** — a WR, a WR's QB, changing teams completely changes their opportunity. Also doesn't factor in Offensive-Line health/changes enough.
+- **SMALL TRAINING SET** - The biggest issue with using ML for Fantasy Football, there being not enough data. We can't use every season of the NFL since NFL in the 80s was so much different than it was now.
 
-These aren't bugs — they reflect real uncertainty in NFL outcomes that even professional analysts can't fully predict.
+Pure historical stats probably aren't enough to beat a sharp human analyst or a Vegas-calibrated model. Where ML would shine in the fantasy football space is if I combined it with those external signals, such as PFF grades and other things like that.
